@@ -10,8 +10,8 @@
 
 @interface ExpandTableLayout ()
 {
-    CGFloat _contentHeight;
-    NSIndexPath* _indexPath;
+    CGFloat _contentHeight; // テーブルの高さ
+    NSIndexPath* _indexPath; // フルスクリーンの
 }
 @end
 
@@ -22,6 +22,9 @@
     self = [super init];
     if (self) {
         [self setInitialValues];
+            // 値を初期化
+        
+        // 渡されたパラメータを保存
         _indexPath = indexPath;
         _contentHeight = height;
     }
@@ -32,6 +35,7 @@
     self = [super init];
     if (self) {
         [self setInitialValues];
+            // 値を初期化
     }
     return self;
 }
@@ -44,6 +48,7 @@
     self = [super initWithCoder:aDecoder];
     if (self) {
         [self setInitialValues];
+            // 値を初期化
     }
     return self;
 }
@@ -57,14 +62,23 @@
 - (CGSize)collectionViewContentSize
 {
     CGSize size = self.collectionView.bounds.size;
+        // コンテンツサイズはcollectionView のサイズとする
     return size;
 }
 
+/**
+ *  行に対する矩形を計算
+ *
+ *  @param row 行番号
+ *
+ *  @return 矩形
+ */
 - (CGRect) rectForRow:(NSInteger)row
 {
     CGFloat top = .0f;
     CGFloat height = .0f;
     
+    // フルスクリーン上部
     if( row < _indexPath.row ){
         top = (row - _indexPath.row) * _contentHeight;
         if( row == 0 )
@@ -74,9 +88,11 @@
         if( row == 0 )
             top += 20.0f;
     }else if( row == _indexPath.row ){
+        //　フルスクリーン画面
         top = .0f;
-        height = self.collectionView.bounds.size.height;
+        height = [self collectionViewContentSize].height;
     }else{
+        // フルスクリーン下部の計算
         top = (row - _indexPath.row - 1) * _contentHeight + self.collectionView.bounds.size.height;
         height = _contentHeight;
     }
@@ -91,7 +107,7 @@
     
     for (NSInteger i = 0; i < self.count; i++){
         CGRect rectHittest = [self rectForRow:i];
-        // 矩形を取得
+            // 矩形を取得
         
         if( CGRectIntersectsRect(rect, rectHittest) ){
             [array addObject:[NSIndexPath indexPathForItem:i inSection:0]];

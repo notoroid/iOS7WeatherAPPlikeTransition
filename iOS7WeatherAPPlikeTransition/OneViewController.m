@@ -95,48 +95,60 @@
 {
     NSLog(@"fireChangeLayout: call");
     
-    // indexPath:row = 2 を全画面表示する
-    if( _fullScreen == NO /*self.collectionView.pagingEnabled != YES*/ ){
+    // フルスクリーンを有効にした場合
+    if( _fullScreen == NO  ){
         _fullScreen = YES;
+            // フルスクリーン
 
         UIButton* button = [sender isKindOfClass:[UIButton class]] ? sender : nil;
         NSIndexPath* indexPath = nil;
+            // ボタンのindexを取得
         
+        // 呼び出されたbuttonの元cell を探す
         NSArray *visibleCells = [self.collectionView visibleCells];
         for (UICollectionViewCell *cell in visibleCells) {
             UIButton *testButton = (UIButton *)[cell viewWithTag:2];
             if( button == testButton ){
                 indexPath = [self.collectionView indexPathForCell:cell];
+                    // ccell からindexPath を求める
                 break;
             }
         }
         
+        // ExpandTableLayout をリストの高さ65.0f、indexPath をフルスクリーンとする
         __weak OneViewController *weakSelf = self;
         [self.collectionView setCollectionViewLayout:[[ExpandTableLayout alloc] initWithHeight:65.0f fullscreenIndexPath:indexPath] animated:YES completion:^(BOOL finished) {
             
+            // アニメーション終了後にmainqueue を一度通してスワイプレイアウトへ移行
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf.collectionView setCollectionViewLayout:[[SwipeLayout alloc] init] animated:NO completion:^(BOOL finished) {
                     weakSelf.collectionView.alwaysBounceVertical = NO;
                     weakSelf.collectionView.alwaysBounceHorizontal = YES;
                     weakSelf.collectionView.pagingEnabled = YES;
+                    // スクロール方向を変更
                 }];
             });
             
         }];
     }else{
         _fullScreen = NO;
+            // fullscreen を無効に
         
         NSArray *visibleItemIndexes = [self.collectionView indexPathsForVisibleItems];
         NSIndexPath *indexPath = visibleItemIndexes.count > 0 ? visibleItemIndexes[0] : nil;
+            // 表示されているcellのindexPath を取得
         
+        // スワイプからExpandTableLayout をリストの高さ65.0f、indexPath をフルスクリーンに変更
         __weak OneViewController *weakSelf = self;
         [self.collectionView setCollectionViewLayout:[[ExpandTableLayout alloc] initWithHeight:65.0f fullscreenIndexPath:[NSIndexPath indexPathForRow:indexPath.row inSection:0]] animated:YES completion:^(BOOL finished) {
             
+            // アニメーション終了後にmainqueue を一度通してオリジナルのレイアウトへ遷移
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf.collectionView setCollectionViewLayout:weakSelf.originalLayout animated:YES completion:^(BOOL finished) {
                     weakSelf.collectionView.alwaysBounceVertical = YES;
                     weakSelf.collectionView.alwaysBounceHorizontal = NO;
                     weakSelf.collectionView.pagingEnabled = NO;
+                    // スクロール方向を変更
                 }];
                 
             });
